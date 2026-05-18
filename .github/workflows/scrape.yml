@@ -1,0 +1,21 @@
+name: Scrape Casa Sapo
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Weekly, Sunday 3am UTC
+  workflow_dispatch:        # Manual trigger for testing
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python main.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REQUEST_DELAY_MIN: 2
+          REQUEST_DELAY_MAX: 5

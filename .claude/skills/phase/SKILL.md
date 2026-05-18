@@ -1,6 +1,6 @@
 ---
 name: phase
-description: Implement the next phase of the project from the scope/plan document
+description: Implement the next phase of the project from the scope/plan document. 
 ---
 
 # Implement Next Phase
@@ -12,3 +12,4 @@ description: Implement the next phase of the project from the scope/plan documen
 5. If the project uses TypeScript, run `npx tsc --noEmit` to verify no type errors.
 6. If tests exist, run them and confirm they pass.
 7. Update the scope/phase document to mark the phase complete and note any deviations from the original plan.
+8. Important - implement only one phase at a time. Do no jump ahead and do multiple phases in one go. 

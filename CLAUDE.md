@@ -6,9 +6,9 @@ After completing implementation work, update the relevant scope.md or design doc
 
 ## Code Standards
 
-- This is primarily a TypeScript project. Use TypeScript for all new code. Always run `npx tsc --noEmit` after making changes to verify type-checking passes.
-- Do not cast to `unknown` or use `any` in Typescript 
-- For styling - use seperate stylesheet files and avoid inline styles 
+- This is a Python project. Use Python 3.11+ for all new code.
+- Use type hints throughout. Run `python -m mypy <file>` when adding non-trivial logic.
+- No bare `except:` — always catch specific exceptions.
 
 ## Debugging
 
