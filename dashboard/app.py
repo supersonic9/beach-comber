@@ -29,8 +29,7 @@ PROPERTY_TYPE_LABELS: dict[str, str] = {
 }
 
 
-@st.cache_resource
-def get_connection() -> psycopg2.extensions.connection:
+def _connect() -> psycopg2.extensions.connection:
     url = os.environ.get("DATABASE_URL")
     if not url:
         st.error("DATABASE_URL not set")
@@ -40,30 +39,33 @@ def get_connection() -> psycopg2.extensions.connection:
 
 @st.cache_data(ttl=300)
 def load_listings() -> pd.DataFrame:
-    conn = get_connection()
-    query = """
-        SELECT
-            l.id,
-            l.property_type,
-            l.search_area,
-            l.location,
-            l.bedrooms,
-            l.price,
-            l.price_per_sqm,
-            l.size_sqm,
-            l.condition,
-            l.url,
-            l.first_seen,
-            l.last_seen,
-            l.is_active,
-            COALESCE(first_snap.price, l.price) AS first_price
-        FROM listings l
-        LEFT JOIN price_snapshots first_snap ON (
-            first_snap.listing_id = l.id
-            AND first_snap.scraped_at = l.first_seen
-        )
-    """
-    df = pd.read_sql(query, conn)
+    conn = _connect()
+    try:
+        query = """
+            SELECT
+                l.id,
+                l.property_type,
+                l.search_area,
+                l.location,
+                l.bedrooms,
+                l.price,
+                l.price_per_sqm,
+                l.size_sqm,
+                l.condition,
+                l.url,
+                l.first_seen,
+                l.last_seen,
+                l.is_active,
+                COALESCE(first_snap.price, l.price) AS first_price
+            FROM listings l
+            LEFT JOIN price_snapshots first_snap ON (
+                first_snap.listing_id = l.id
+                AND first_snap.scraped_at = l.first_seen
+            )
+        """
+        df = pd.read_sql(query, conn)
+    finally:
+        conn.close()
     df["price_change_pct"] = (
         (df["price"] - df["first_price"]) / df["first_price"].replace(0, pd.NA) * 100
     ).round(1)
@@ -75,15 +77,18 @@ def load_listings() -> pd.DataFrame:
 
 @st.cache_data(ttl=300)
 def load_snapshots() -> pd.DataFrame:
-    conn = get_connection()
-    query = """
-        SELECT ps.listing_id, ps.scraped_at, ps.price,
-               l.search_area, l.property_type
-        FROM price_snapshots ps
-        JOIN listings l ON l.id = ps.listing_id
-        ORDER BY ps.scraped_at
-    """
-    return pd.read_sql(query, conn)
+    conn = _connect()
+    try:
+        query = """
+            SELECT ps.listing_id, ps.scraped_at, ps.price,
+                   l.search_area, l.property_type
+            FROM price_snapshots ps
+            JOIN listings l ON l.id = ps.listing_id
+            ORDER BY ps.scraped_at
+        """
+        return pd.read_sql(query, conn)
+    finally:
+        conn.close()
 
 
 def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
