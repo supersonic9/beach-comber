@@ -85,9 +85,11 @@ def _extract_real_url(href: str) -> str:
     qs = parse_qs(parsed.query)
     if "l" in qs:
         real = qs["l"][0]
-        # Strip tracking params from the real URL
         real_parsed = urlparse(real)
-        return real_parsed._replace(query="").geturl()
+        clean = real_parsed._replace(query="").geturl()
+        if clean.startswith("/"):
+            clean = "https://casa.sapo.pt" + clean
+        return clean
     return href
 
 

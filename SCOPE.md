@@ -281,7 +281,7 @@ jobs:
 
 ---
 
-### Phase 6 — Streamlit Dashboard
+### Phase 6 — Streamlit Dashboard ✅ COMPLETE
 
 **Claude:** Write `dashboard/app.py`
 
@@ -304,6 +304,13 @@ jobs:
 1. `streamlit run dashboard/app.py`
 2. All filters update table and charts
 3. Listing links open Casa Sapo in browser
+
+**Implementation notes:**
+- `@st.cache_resource` for DB connection (persistent across reruns), `@st.cache_data(ttl=300)` for queries (5-min cache)
+- `first_price` joined from `price_snapshots` on `first_seen` date; `price_change_pct` computed in Python
+- Price trends tab computes per-snapshot `price/size_sqm` on the fly (listing size is static from `listings` table)
+- Market volume uses `dt.to_period("W")` weekly bucketing, `nunique()` on `listing_id` to avoid double-counting same listing in multiple snapshots per week
+- mypy clean with `--ignore-missing-imports` (stubs not needed for streamlit/plotly/pandas)
 
 **Manual steps (user) — Streamlit Cloud deploy:**
 1. share.streamlit.io → connect GitHub repo
